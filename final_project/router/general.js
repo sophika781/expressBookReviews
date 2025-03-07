@@ -4,16 +4,6 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-const doesExist= (username) => {
-    let userswithsamename = users.filter((user) => {
-        return user.username === username;
-    });
-    if(userswithsamename.length > 0)
-        return true;
-    return false;
-}
-
-
 public_users.post("/register", (req,res) => {
   const username= req.body.username;
   const password= req.body.password;
@@ -21,7 +11,7 @@ public_users.post("/register", (req,res) => {
   if(!username || !password){
     res.send("Please provide username and/or password!");
   }
-  else if(!doesExist(username)){
+  else if(!isValid(username)){
     users.push({"username": username, "password": password});
     return res.status(200).json({message: "User successfully added!"});
   }
