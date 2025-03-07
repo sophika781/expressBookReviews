@@ -33,29 +33,39 @@ regd_users.post("/login", (req,res) => {
     let accessToken = jwt.sign({
         data: password
     }, 'access', { expiresIn: 60 * 60 });
+    
     // Store access token and username in session
     req.session.authorization = {
         accessToken, username
     }
-    return res.status(200).json({message: "User successfully logged in!"});
+    return res.status(200).json({message: `User successfully logged in!`});
   }
-  return res.status(300).json({message: "Yet to be implemented"});
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   let isbn= req.params.isbn;
   let review= req.query.review;
-  let reviews = books[isbn].reviews;
-  let old_review= reviews.filter((review) => review.username === req.session.authorization.username);
-  if(!old_review){
-    let r= {"username": req.session.authorization.username, "review": review};
-    books[isbn].reviews.push(...[r]);
+  if(!review){
+    return res.status(400).json({message: "Write a valid review!"});
   }
   else{
-    
+    books[isbn].reviews[req.session.authorization.username]= review;
+    return res.status(200).json({message: `Review by ${req.session.authorization.username} successfully edited/added`});
   }
-  return res.status(300).json({message: "Yet to be implemented"});
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    let isbn= req.params.isbn;
+    let reviews= books[isbn].reviews;
+    if(!reviews[req.session.authorization.username])
+        return res.status(400).json({message: "You have not posted a review for this book!"});
+    else{
+        delete reviews[req.session.authorization.username];
+        return res.status(200).json({message: "Review has been successfully deleted!"});
+    }
+    
+
 });
 
 module.exports.authenticated = regd_users;

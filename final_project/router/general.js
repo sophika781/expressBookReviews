@@ -12,7 +12,7 @@ public_users.post("/register", (req,res) => {
     res.send("Please provide username and/or password!");
   }
   else if(!isValid(username)){
-    users.push({"username": username, "password": password});
+    users.push(...[{"username": username, "password": password}]);
     return res.status(200).json({message: "User successfully added!"});
   }
   else{
