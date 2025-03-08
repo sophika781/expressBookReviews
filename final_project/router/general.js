@@ -1,15 +1,57 @@
 const express = require('express');
+const axios= require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+
+
+async function getAllBooks(){
+    try{
+        let response = await axios.get("https://sophika171g-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/");
+        console.log(response.data);
+    }
+    catch(error){
+        console.log(error.message);
+    }
+}
+
+async function getBookByISBN (isbn) {
+    try{
+        let response = await axios.get(`https://sophika171g-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/isbn/${isbn}`);
+        console.log(response.data);
+    }
+    catch(error){
+        console.log(error.message);
+    }
+}
+
+async function getBookByAuthor(author) {
+    try{
+        let response= await axios.get(`https://sophika171g-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/author/${author}`);
+        console.log(response.data);
+    }
+    catch(error){
+        console.log(error.message);
+    }
+}
+
+async function getBookByTitle(title){
+    try{
+        let response= await axios.get(`https://sophika171g-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/title/${title}`);
+        console.log(response.data);
+    }
+    catch(error){
+        console.log(error.message);
+    }
+}
 
 public_users.post("/register", (req,res) => {
   const username= req.body.username;
   const password= req.body.password;
 
   if(!username || !password){
-    res.send("Please provide username and/or password!");
+    return res.status(400).json({message: "Please provide username and/or password!"});
   }
   else if(!isValid(username)){
     users.push(...[{"username": username, "password": password}]);
@@ -22,17 +64,17 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-   res.send(JSON.stringify(books, null, 4));
+   return res.status(200).send(JSON.stringify(books, null, 4));
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   let isbn= req.params.isbn;
   if(books[isbn]){
-    res.send(JSON.stringify(books[isbn], null, 4));
+    return res.status(200).send(JSON.stringify(books[isbn], null, 4));
   }
   else
-    res.send("Book does not exist!");
+    return res.status(400).json({message: "Book does not exist!"});
  });
   
 // Get book details based on author
@@ -46,9 +88,9 @@ public_users.get('/author/:author',function (req, res) {
     }
   }
   if(book_list.length === 0)
-    res.send("No books were found!");
+    return res.status(400).json({message: "No books were found!"});
   else
-    res.send(book_list);
+    return res.status(200).send(book_list);
 });
 
 // Get all books based on title
@@ -62,18 +104,18 @@ public_users.get('/title/:title',function (req, res) {
     }
   }
   if(book_list.length === 0)
-    res.send("No books were found!");
+    return res.status(400).json({message: "No books were found!"});
   else
-    res.send(book_list);
+    return res.status(200).send(book_list);
 });
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   let isbn= req.params.isbn;
     if(books[isbn])
-        res.send(books[isbn].reviews);
+        return res.status(200).send(books[isbn].reviews);
     else
-        res.send("Book does not exist!");
+        return res.status(400).json({message: "Book does not exist!"});
 });
 
 module.exports.general = public_users;
